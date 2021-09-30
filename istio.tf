@@ -107,11 +107,25 @@ resource "null_resource" "installing-istio" {
   triggers = {
     always_run = timestamp()
   }
-
   provisioner "local-exec" {
     command = "kubectl apply -f ${local_file.istio-profile.filename} -n ${kubernetes_namespace.istio-system.metadata[0].name}"
   }
   depends_on = [
     local_file.istio-profile
+  ]
+}
+resource "time_sleep" "wait_30_seconds" {
+  create_duration = "60s"
+
+  depends_on = [
+    null_resource.installing-istio
+  ]
+}
+resource "null_resource" "wait_istio_ready" {
+  provisioner "local-exec" {
+    command = "kubectl wait --for=condition=ready pods -l release=istio -n istio-system"
+  }
+  depends_on = [
+    time_sleep.wait_30_seconds
   ]
 }
