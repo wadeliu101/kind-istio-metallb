@@ -1,0 +1,6 @@
+istio-*
+configs
+terraform.tfstate*
+.terraform
+*.tfvars
+.terraform.lock.hcl
