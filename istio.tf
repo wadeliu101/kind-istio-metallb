@@ -1,10 +1,13 @@
 resource "null_resource" "download_istio" {
+  triggers = {
+    ISTIO_VERSION = "1.11.2"
+  }
   provisioner "local-exec" {
-    command = "curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.11.2 sh -"
+    command = "curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${self.triggers.ISTIO_VERSION} sh -"
   }
   provisioner "local-exec" {
     when    = destroy
-    command = "rm -r ${path.root}/istio-1.11.2"
+    command = "rm -r ${path.root}/istio-${self.triggers.ISTIO_VERSION}"
   }
   depends_on = [
     helm_release.metallb
@@ -26,9 +29,8 @@ resource "kubernetes_namespace" "istio-operator" {
 }
 resource "helm_release" "istio-operator" {
   name            = "istio-operator"
-  repository      = "${path.root}/istio-1.11.2/manifests/charts"
+  repository      = "${path.root}/istio-${var.ISTIO_VERSION}/manifests/charts"
   chart           = "istio-operator"
-  version         = "1.11.2"
   namespace       = kubernetes_namespace.istio-operator.metadata[0].name
   cleanup_on_fail = true
 }
@@ -99,33 +101,19 @@ resource "local_file" "istio-profile" {
             effect: "NoSchedule"
   EOF
   filename = "${path.root}/configs/istio-profile.yaml"
+  provisioner "local-exec" {
+    command = "kubectl apply -f ${self.filename} -n ${kubernetes_namespace.istio-system.metadata[0].name}"
+  }
   depends_on = [
     helm_release.istio-operator
   ]
 }
-resource "null_resource" "installing-istio" {
-  triggers = {
-    always_run = timestamp()
-  }
+resource "time_sleep" "wait_istio_ready" {
+  create_duration = "30s"
   provisioner "local-exec" {
-    command = "kubectl apply -f ${local_file.istio-profile.filename} -n ${kubernetes_namespace.istio-system.metadata[0].name}"
+    command = "kubectl wait --for=condition=ready pods -l release=istio -n ${kubernetes_namespace.istio-system.metadata[0].name}"
   }
   depends_on = [
     local_file.istio-profile
-  ]
-}
-resource "time_sleep" "wait_30_seconds" {
-  create_duration = "60s"
-
-  depends_on = [
-    null_resource.installing-istio
-  ]
-}
-resource "null_resource" "wait_istio_ready" {
-  provisioner "local-exec" {
-    command = "kubectl wait --for=condition=ready pods -l release=istio -n istio-system"
-  }
-  depends_on = [
-    time_sleep.wait_30_seconds
   ]
 }
