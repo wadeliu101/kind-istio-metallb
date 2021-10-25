@@ -1,7 +1,7 @@
 data "kubernetes_service" "istio-ingressgateway" {
   metadata {
     name = "istio-ingressgateway"
-    namespace = "istio-system"
+    namespace = kubernetes_namespace.istio-system.metadata[0].name
   }
   depends_on = [
     time_sleep.wait_istio_ready
