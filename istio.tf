@@ -1,6 +1,6 @@
 resource "null_resource" "download_istio" {
   triggers = {
-    ISTIO_VERSION = "1.11.2"
+    ISTIO_VERSION = var.ISTIO_VERSION
   }
   provisioner "local-exec" {
     command = "curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${self.triggers.ISTIO_VERSION} sh -"
@@ -44,62 +44,7 @@ resource "kubernetes_namespace" "istio-system" {
   depends_on = [helm_release.istio-operator]
 }
 resource "local_file" "istio-profile" {
-  content  = <<-EOF
-  apiVersion: install.istio.io/v1alpha1
-  kind: IstioOperator
-  metadata:
-    name: istiocontrolplane
-  spec:
-    profile: demo
-    components:
-      ingressGateways:
-      - name: istio-ingressgateway
-        enabled: true
-        k8s:
-          service:
-            ports:
-            - name: status-port
-              nodePort: 31151
-              port: 15021
-              protocol: TCP
-              targetPort: 15021
-            - name: http2
-              nodePort: 32041
-              port: 80
-              protocol: TCP
-              targetPort: 8080
-            - name: https
-              nodePort: 31236
-              port: 443
-              protocol: TCP
-              targetPort: 8443
-            - name: tcp
-              nodePort: 31705
-              port: 31400
-              protocol: TCP
-              targetPort: 31400
-            - name: tls
-              nodePort: 32152
-              port: 15443
-              protocol: TCP
-              targetPort: 15443
-          nodeSelector:
-            ingress-ready: "true"
-          tolerations:
-          - key: "node-role.kubernetes.io/master"
-            operator: "Exists"
-            effect: "NoSchedule"
-      egressGateways:
-      - name: istio-egressgateway
-        enabled: true
-        k8s:
-          nodeSelector:
-            ingress-ready: "true"
-          tolerations:
-          - key: "node-role.kubernetes.io/master"
-            operator: "Exists"
-            effect: "NoSchedule"
-  EOF
+  content = var.ISTIO_PROFILE
   filename = "${path.root}/configs/istio-profile.yaml"
   provisioner "local-exec" {
     command = "kubectl apply -f ${self.filename} -n ${kubernetes_namespace.istio-system.metadata[0].name}"
@@ -111,7 +56,7 @@ resource "local_file" "istio-profile" {
 resource "time_sleep" "wait_istio_ready" {
   create_duration = "30s"
   provisioner "local-exec" {
-    command = "kubectl wait --for=condition=ready pods -l release=istio -n ${kubernetes_namespace.istio-system.metadata[0].name}"
+    command = "kubectl wait deployment --all --timeout=-1s --for=condition=Available -n ${kubernetes_namespace.istio-system.metadata[0].name}"
   }
   depends_on = [
     local_file.istio-profile

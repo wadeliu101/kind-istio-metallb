@@ -9,6 +9,7 @@ resource "helm_release" "metallb" {
   repository       = "https://metallb.github.io/metallb"
   chart            = "metallb"
   namespace        = "metallb"
+  version          = var.METALLB_VERSION
   create_namespace = true
   values = [
   <<-EOF

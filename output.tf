@@ -4,7 +4,7 @@ data "kubernetes_service" "istio-ingressgateway" {
     namespace = "istio-system"
   }
   depends_on = [
-    null_resource.wait_istio_ready
+    time_sleep.wait_istio_ready
   ]
 }
 output "config_context" {
@@ -13,6 +13,6 @@ output "config_context" {
 output "ingress_ip_address" {
   value = data.kubernetes_service.istio-ingressgateway.status[0].load_balancer[0].ingress[0].ip
   depends_on = [
-    null_resource.wait_istio_ready
+    time_sleep.wait_istio_ready
   ]
 }
