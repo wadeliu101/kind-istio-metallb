@@ -2,6 +2,10 @@ variable "ISTIO_VERSION" {
   type = string
   default = "1.11.2"
 }
+variable "KIND_NAME" {
+  type = string
+  default = "k8s-cluster"
+}
 variable "KIND_VERSION" {
   type = string
   default = "1.22.1"
@@ -32,6 +36,8 @@ variable "KIND_CONFIG" {
         protocol: TCP
     - role: worker
     - role: worker
+    networking:
+      disableDefaultCNI: true
   EOF
 }
 variable "ISTIO_PROFILE" {
@@ -92,4 +98,8 @@ variable "ISTIO_PROFILE" {
               operator: "Exists"
               effect: "NoSchedule"
   EOF
+}
+variable "CILIUM_VERSION" {
+  type = string
+  default = "1.10.5"
 }

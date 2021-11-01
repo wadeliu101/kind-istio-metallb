@@ -1,5 +1,11 @@
 resource "kind_cluster" "k8s-cluster" {
-  name   = "k8s-cluster"
+  name   = var.KIND_NAME
   image  = "kindest/node:v${var.KIND_VERSION}"
-  config = var.KIND_CONFIG
+  config = yamlencode(yamldecode(
+  <<-EOF
+    ${var.KIND_CONFIG}
+    networking:
+      disableDefaultCNI: true
+  EOF
+  ))
 }
