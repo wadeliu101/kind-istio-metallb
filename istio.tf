@@ -47,7 +47,7 @@ resource "local_file" "istio-profile" {
   content = var.ISTIO_PROFILE
   filename = "${path.root}/configs/istio-profile.yaml"
   provisioner "local-exec" {
-    command = "kubectl apply -f ${self.filename} -n ${kubernetes_namespace.istio-system.metadata[0].name}"
+    command = "kubectl --context ${kind_cluster.k8s-cluster.context} apply -f ${self.filename} -n ${kubernetes_namespace.istio-system.metadata[0].name}"
   }
   depends_on = [
     helm_release.istio-operator
@@ -56,7 +56,7 @@ resource "local_file" "istio-profile" {
 resource "time_sleep" "wait_istio_ready" {
   create_duration = "30s"
   provisioner "local-exec" {
-    command = "kubectl wait deployment --all --timeout=-1s --for=condition=Available -n ${kubernetes_namespace.istio-system.metadata[0].name}"
+    command = "kubectl --context ${kind_cluster.k8s-cluster.context} wait deployment --all --timeout=-1s --for=condition=Available -n ${kubernetes_namespace.istio-system.metadata[0].name}"
   }
   depends_on = [
     local_file.istio-profile
