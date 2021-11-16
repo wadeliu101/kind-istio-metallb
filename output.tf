@@ -16,3 +16,6 @@ output "ingress_ip_address" {
     time_sleep.wait_istio_ready
   ]
 }
+output "storage_class" {
+  value = "standard"
+}
