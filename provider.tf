@@ -12,6 +12,10 @@ terraform {
       source = "hashicorp/helm"
       version = "2.3.0"
     }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "1.13.1"
+    }
   }
 }
 provider "kubernetes" {
@@ -23,4 +27,8 @@ provider "helm" {
     config_context = kind_cluster.k8s-cluster.context
     config_path    = "~/.kube/config"
   }
+}
+provider "kubectl" {
+  config_context = kind_cluster.k8s-cluster.context
+  config_path    = "~/.kube/config"
 }

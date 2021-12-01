@@ -43,12 +43,9 @@ resource "kubernetes_namespace" "istio-system" {
   }
   depends_on = [helm_release.istio-operator]
 }
-resource "local_file" "istio-profile" {
-  content = var.ISTIO_PROFILE
-  filename = "${path.root}/configs/istio-profile.yaml"
-  provisioner "local-exec" {
-    command = "kubectl --context ${kind_cluster.k8s-cluster.context} apply -f ${self.filename} -n ${kubernetes_namespace.istio-system.metadata[0].name}"
-  }
+resource "kubectl_manifest" "istio-profile" {
+  yaml_body = var.ISTIO_PROFILE
+  override_namespace = kubernetes_namespace.istio-system.metadata[0].name
   depends_on = [
     helm_release.istio-operator
   ]
@@ -59,6 +56,6 @@ resource "time_sleep" "wait_istio_ready" {
     command = "kubectl --context ${kind_cluster.k8s-cluster.context} wait deployment --all --timeout=-1s --for=condition=Available -n ${kubernetes_namespace.istio-system.metadata[0].name}"
   }
   depends_on = [
-    local_file.istio-profile
+    kubectl_manifest.istio-profile
   ]
 }
