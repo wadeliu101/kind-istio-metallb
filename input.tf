@@ -1,6 +1,6 @@
 variable "ISTIO_VERSION" {
   type = string
-  default = "1.11.2"
+  default = "1.12.1"
 }
 variable "KIND_NAME" {
   type = string
@@ -101,5 +101,5 @@ variable "ISTIO_PROFILE" {
 }
 variable "CILIUM_VERSION" {
   type = string
-  default = "1.10.5"
+  default = "1.11.0"
 }
