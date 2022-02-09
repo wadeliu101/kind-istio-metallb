@@ -51,7 +51,7 @@ resource "kubectl_manifest" "istio-profile" {
   ]
 }
 resource "time_sleep" "wait_istio_ready" {
-  create_duration = "30s"
+  create_duration = "120s"
   provisioner "local-exec" {
     command = "kubectl --context ${kind_cluster.k8s-cluster.context} wait deployment --all --timeout=-1s --for=condition=Available -n ${kubernetes_namespace.istio-system.metadata[0].name}"
   }
