@@ -12,7 +12,7 @@ variable "KIND_VERSION" {
 }
 variable "METALLB_VERSION" {
   type = string
-  default = "0.10.3"
+  default = "0.11.0"
 }
 variable "KIND_CONFIG" {
   type = string

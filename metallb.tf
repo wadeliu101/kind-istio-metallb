@@ -18,7 +18,7 @@ resource "helm_release" "metallb" {
       addresses:
       # - ${cidrhost(data.external.subnet.result.Subnet, 150)}-${cidrhost(data.external.subnet.result.Subnet, 200)}
       # for mac
-      - 127.0.0.1 - 127.0.0.1
+      - 127.0.0.1/32
   EOF
   ]
   depends_on = [
