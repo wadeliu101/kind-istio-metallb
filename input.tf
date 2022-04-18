@@ -101,5 +101,5 @@ variable "ISTIO_PROFILE" {
 }
 variable "CILIUM_VERSION" {
   type = string
-  default = "1.11.0"
+  default = "1.11.3"
 }
