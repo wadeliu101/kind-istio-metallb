@@ -38,7 +38,7 @@ resource "helm_release" "cilium" {
 resource "kubectl_manifest" "hubble-router" {
   for_each = {
     hubble-gateway = <<EOF
-    apiVersion: networking.istio.io/v1alpha3
+    apiVersion: networking.istio.io/v1beta1
     kind: Gateway
     metadata:
       name: hubble
@@ -51,16 +51,16 @@ resource "kubectl_manifest" "hubble-router" {
           name: http
           protocol: HTTP
         hosts:
-        - "hubble.${data.kubernetes_service.istio-ingressgateway.status[0].load_balancer[0].ingress[0].ip}.nip.io"
+        - "hubble.${data.kubernetes_service.istio-ingress.status[0].load_balancer[0].ingress[0].ip}.nip.io"
     EOF
     hubble-virtaulservice = <<EOF
-    apiVersion: networking.istio.io/v1alpha3
+    apiVersion: networking.istio.io/v1beta1
     kind: VirtualService
     metadata:
       name: hubble
     spec:
       hosts:
-      - "hubble.${data.kubernetes_service.istio-ingressgateway.status[0].load_balancer[0].ingress[0].ip}.nip.io"
+      - "hubble.${data.kubernetes_service.istio-ingress.status[0].load_balancer[0].ingress[0].ip}.nip.io"
       gateways:
       - hubble
       http:
